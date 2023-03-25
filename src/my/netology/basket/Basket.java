@@ -1,17 +1,14 @@
 package my.netology.basket;
 import my.netology.rounding.Round;
 import java.io.*;
+import java.util.Arrays;
 
-public class Basket {
-    private static double[] price;
-    private static String[] foodName;
+public class Basket implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+    private double[] price;
+    private String[] foodName;
     private int[] basket;
-    private File file;
-
-    public Basket(String pathFile) throws FileNotFoundException {
-        loadFromTxtFile(new File(pathFile));
-        this.basket = new int[foodName.length];
-    }
 
     public Basket(double[] price, String[] foodName) {
         this.price = price;
@@ -23,36 +20,8 @@ public class Basket {
         return price;
     }
 
-    private static void loadFromTxtFile(File textFile) throws FileNotFoundException {
-        if (textFile.exists()) {
-            InputStreamReader iSR = new FileReader(textFile);
-            StringBuilder strBuild = new StringBuilder();
-            try(BufferedReader BuffR = new BufferedReader(iSR)){
-                int intStr;
-                while ((intStr = BuffR.read()) != -1) {
-                    strBuild.append(Character.toChars(intStr));
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            String[] resBasket = strBuild.toString().split("=");
-            boolean intStr = false; int count = 0;
-            for (int i = 0; i < resBasket.length; i++) {
-                if ("foodName:".equals(resBasket[i])) {
-                    intStr = true; count = 0;
-                    continue;
-                } else if ("price:".equals(resBasket[i])) {
-                    intStr = false; count = 0;
-                    continue;
-                }
-                if (intStr) {
-                    foodName[count] = resBasket[i];
-                } else {
-                    price[count] = Double.parseDouble(resBasket[i]);
-                }
-                count++;
-            }
-        } else throw new FileNotFoundException();
+    public int[] getBasket() {
+        return basket;
     }
 
     public void addToCart(int productNum, int amount) {
@@ -75,17 +44,12 @@ public class Basket {
         System.out.printf("%-50s %s\n", "ИТОГО: ", Round.roundingTo(total, 2));
     }
 
-    public void saveTxt(String pathFile) throws IOException {
-        try(PrintWriter pW = new PrintWriter(pathFile)) {
-            pW.print("foodName:" + "=");//метка наименования продуктов
-            for (int i = 0; i < foodName.length; i++) {
-                pW.print(foodName[i] + "=");
-            }
-            pW.print("price:" + "=");//метка цен
-            for (int i = 0; i < price.length; i++) {
-                pW.print(price[i] + "=");
-            }
-            pW.flush();
-        }
+    @Override
+    public String toString() {
+        return "Basket{\n" +
+                "foodName: " + Arrays.toString(foodName) + "\n" +
+                "price: " + Arrays.toString(price) + "\n" +
+                "basket: " + Arrays.toString(basket) +
+                '}';
     }
 }
