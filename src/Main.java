@@ -1,65 +1,21 @@
-import my.netology.rounding.Round;
-import java.util.Scanner;
+import my.netology.basket.Basket;
+
+import java.io.*;
 
 public class Main {
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        //массив продуктовой корзины
+    public static void main(String[] args) throws IOException {
+        double[] price = { 50.0, 14.0, 80.0, 34.53, 65.92 };
         String[] foodBasked = { "Молоко", "Хлеб", "Гречневая крупа", "Сыр", "Конфеты" };
-        //массив цен
-        double[] price = { 50, 14, 80, 34.53, 65.92 };
-        //выведем корзину на экран
-        for (int i = 0; i < foodBasked.length; i++) {
-            System.out.println((i + 1) + ". " + foodBasked[i] + " " + price[i] + " руб/шт");
+        Basket basket = new Basket(price, foodBasked);
+        for (int i = 0; i < price.length; i++) {
+            basket.addToCart(i, 2 * i + 1);//добавим продукт
         }
-        int[] sum = new int[5]; //заполним нулям
-        final String INDICATION = "\"номер товара [пробел] количество\"";
-        while (true) {
-            System.out.println("Выберите " + INDICATION + " или введите \"end\"");
-            String input = scanner.nextLine();
-            if ("end".equals(input)) {
-                break;
-            }
-            String[] parts = input.split(" ");
-            //проверка на правильность ввода пользователем
-            if (parts.length != 2) {
-                System.out.println("Ошибка ввода! Требуется: " + INDICATION + ". Было введено: " + input);
-                continue;
-            }
-            int position = 0, amount = 0;
-            try {
-                position = Integer.parseInt(parts[0]);
-                amount = Integer.parseInt(parts[1]);
-            } catch (NumberFormatException e) {
-                System.out.println("Ошибка ввода формата числа! " + e);
-                System.out.println("Требуется: положительное целое");
-                System.out.println("Было введено: " + input);
-                continue;
-            }
-                //проверка на правильность значений
-                if (position > foodBasked.length || position <= 0 || amount < 0) {
-                    System.out.println("Ошибка ввода! Требуется для номера товара: число от 1 до " + foodBasked.length
-                            + ". Для количества положительное число." +
-                            " Было введено: " + input);
-                    continue;
-                }
-                sum[position - 1] += amount;
+        basket.printCard();//печать карзины
+        basket.saveTxt("basket");
+        Basket basket1 = new Basket("basket");
+        for (int i = 0; i < basket1.getPrice().length; i++) {
+            basket1.addToCart(i, 3 * i + 1);
         }
-        //вышли из цикла
-        double total = 0;
-        System.out.println("Ваша корзина:");
-        for (int i = 0; i < sum.length; i++) {
-            if (sum[i] > 0){
-                System.out.println(foodBasked[i] +
-                        " " + sum[i] +
-                        " шт " + price[i] +
-                        " руб/шт " +
-                        Round.roundingTo((sum[i] * price[i]), 2) +
-                        " руб в сумме");
-                total += sum[i] * price[i];
-            }
-        }
-        System.out.println("ИТОГО: " + Round.roundingTo(total, 2) + " руб.");
-        System.out.println("Программа завершена!");
+        basket1.printCard();//печать карзины
     }
 }
