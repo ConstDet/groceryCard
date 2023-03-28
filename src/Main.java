@@ -1,3 +1,4 @@
+import my.netology.ClientLog;
 import my.netology.basket.Basket;
 
 import java.io.*;
@@ -13,9 +14,15 @@ public class Main {
         basket.printCard();//печать карзины
         basket.saveTxt("basket");
         Basket basket1 = new Basket("basket");
+        ClientLog clientLog = new ClientLog();
         for (int i = 0; i < basket1.getPrice().length; i++) {
             basket1.addToCart(i, 3 * i + 1);
+            clientLog.log(i, 3 * i + 1);
         }
+        clientLog.exportAsCSV(new File("log.csv"));
+        basket1.saveJSON("basket.json");
+        basket1.loadFromJSONFile(new File("basket.json"));
         basket1.printCard();//печать карзины
+
     }
 }
