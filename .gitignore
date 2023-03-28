@@ -4,6 +4,6 @@
 /target
 basket
 basket_bin
-.json
-.csv
-.xml
+*.json
+*.csv
+*.xml
