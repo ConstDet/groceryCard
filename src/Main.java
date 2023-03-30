@@ -13,15 +13,16 @@ public class Main {
         }
         basket.printCard();//печать карзины
         basket.saveTxt("basket");
+
         Basket basket1 = new Basket("basket");
         ClientLog clientLog = new ClientLog();
         for (int i = 0; i < basket1.getPrice().length; i++) {
             basket1.addToCart(i, 3 * i + 1);
             clientLog.log(i, 3 * i + 1);
         }
-        clientLog.exportAsCSV(new File("log.csv"));
-        basket1.saveJSON("basket.json");
-        basket1.loadFromJSONFile(new File("basket.json"));
+        clientLog.exportAsCSV(new File("log.csv"));//сохранили лог
+        basket1.saveJSON("basket.json");//записали карзину в json
+        basket1.loadFromJSONFile(new File("basket.json"));//считали карзину
         basket1.printCard();//печать карзины
 
     }

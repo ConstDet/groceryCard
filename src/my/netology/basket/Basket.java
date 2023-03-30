@@ -1,14 +1,12 @@
 package my.netology.basket;
-import my.netology.ClientLog;
 import my.netology.rounding.Round;
-import netscape.javascript.JSObject;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.io.*;
 
-public class Basket extends ClientLog {
+public class Basket {
     private static double[] price;
     private static String[] foodName;
     private int[] basket;
@@ -67,11 +65,10 @@ public class Basket extends ClientLog {
             try {
                 Object obj = jsonParser.parse(new FileReader(jsonFile));
                 JSONObject jsonObject = (JSONObject) obj;
-                price[0] = (double) jsonObject.get("Молоко");
-                price[1] = (double) jsonObject.get("Хлеб");
-                price[2] = (double) jsonObject.get("Гречневая крупа");
-                price[3] = (double) jsonObject.get("Сыр");
-                price[4] = (double) jsonObject.get("Конфеты");
+                for (int i = 0; i < jsonObject.size() / 2; i++) {
+                    foodName[i] = (String) jsonObject.get(i + "-text");
+                    price[i] = (double) jsonObject.get(i + "-double");
+                }
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
             } catch (IOException e) {
@@ -119,7 +116,10 @@ public class Basket extends ClientLog {
     public void saveJSON(String pathFile) {
         JSONObject jsonObject = new JSONObject();
         for (int i = 0; i < foodName.length; i++) {
-            jsonObject.put(foodName[i], price[i]);
+            jsonObject.put(i + "-text", foodName[i]);
+        }
+        for (int i = 0; i < price.length; i++) {
+            jsonObject.put(i + "-double", price[i]);
         }
         try (FileWriter fP = new FileWriter(new File(pathFile))) {
             fP.write(jsonObject.toJSONString());
