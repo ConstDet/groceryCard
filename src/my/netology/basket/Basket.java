@@ -12,8 +12,15 @@ public class Basket {
     private int[] basket;
     private File file;
 
-    public Basket(String pathFile) throws FileNotFoundException {
-        loadFromTxtFile(new File(pathFile));
+    public Basket(String pathFile, String format) throws FileNotFoundException {
+        switch (format) {
+            case "text":
+                loadFromTxtFile(new File(pathFile));
+                break;
+            case "json":
+                loadFromJSONFile(new File(pathFile));
+                break;
+        }
         this.basket = new int[foodName.length];
     }
 
@@ -66,7 +73,7 @@ public class Basket {
                 Object obj = jsonParser.parse(new FileReader(jsonFile));
                 JSONObject jsonObject = (JSONObject) obj;
                 for (int i = 0; i < jsonObject.size() / 2; i++) {
-                    foodName[i] = (String) jsonObject.get(i + "-text");
+                    не проинициализирован массив foodName[i] = (String) jsonObject.get(i + "-text");
                     price[i] = (double) jsonObject.get(i + "-double");
                 }
             } catch (FileNotFoundException e) {
