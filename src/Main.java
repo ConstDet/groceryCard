@@ -11,77 +11,97 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 
 public class Main {
-    public static void main(String[] args) throws ParserConfigurationException, IOException, SAXException {
-        Basket basket;
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        Document doc = builder.parse("shop.xml");
-        Node root = doc.getDocumentElement();//корневой элемент
-        System.out.println("Корневой элемент: " + root.getNodeName());
-        NodeList nodeList = root.getChildNodes();
-        for (int i = 0; i < nodeList.getLength(); i++) {
-            Node node = nodeList.item(i);
-            System.out.println("Текущий элемент: " + node.getNodeName());
-            if (Node.TEXT_NODE != node.getNodeType()) {
-                NodeList element = node.getChildNodes();//следующий элемент <load, save, log>
-                switch (node.getNodeName()) {
-                    case "load":
-                        boolean enabled; String fileName = null; String format = null;
-                        for (int t = 0; t < element.getLength(); t++) {
-                            Node atribut = element.item(t);
-                            if (Node.TEXT_NODE != atribut.getNodeType()) {//это атрибут
-                                String f = atribut.getNodeName();
-                                switch (atribut.getNodeName()) {
-                                    case "enabled":
-                                        enabled = "true".equals(atribut.getChildNodes().item(0).getTextContent());
-                                        break;
-                                    case "fileName":
-                                        fileName = atribut.getChildNodes().item(0).getTextContent();
-                                        break;
-                                    case "format":
-                                        format = atribut.getChildNodes().item(0).getTextContent();
-                                        break;
-                                    default:
-                                        break;
-                                }
-                            }
-                        }
-                        basket = new Basket(fileName, format);
-                        for (int d = 0; d < basket.getPrice().length; i++) {
-                            basket.addToCart(d, 2 * i + 1);//добавим продукт
-                        }
-                        basket.printCard();
+    private static boolean enabled = false;
+    private static String fileName = null;
+    private static String format = null;
+
+    private static void getAttribute (NodeList element) {
+        for (int t = 0; t < element.getLength(); t++) {
+            Node atribut = element.item(t);
+            if (Node.TEXT_NODE != atribut.getNodeType()) {//это атрибут
+                switch (atribut.getNodeName()) {
+                    case "enabled":
+                        enabled = "true".equals(atribut.getChildNodes().item(0).getTextContent());
                         break;
-                    case "save":
+                    case "fileName":
+                        fileName = atribut.getChildNodes().item(0).getTextContent();
                         break;
-                    case "log":
+                    case "format":
+                        format = atribut.getChildNodes().item(0).getTextContent();
                         break;
                     default:
                         break;
                 }
             }
         }
-        System.exit(0);
-
-        /*double[] price = { 50.0, 14.0, 80.0, 34.53, 65.92 };
-        String[] foodBasked = { "Молоко", "Хлеб", "Гречневая крупа", "Сыр", "Конфеты" };
-        Basket basket = new Basket(price, foodBasked);
-        for (int i = 0; i < price.length; i++) {
-            basket.addToCart(i, 2 * i + 1);//добавим продукт
-        }
-        basket.printCard();//печать карзины
-        basket.saveTxt("basket");
-
-        Basket basket1 = new Basket("basket");
+    }
+    public static void main(String[] args) throws ParserConfigurationException, IOException, SAXException {
+        Basket basket = null;
         ClientLog clientLog = new ClientLog();
-        for (int i = 0; i < basket1.getPrice().length; i++) {
-            basket1.addToCart(i, 3 * i + 1);
-            clientLog.log(i, 3 * i + 1);
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document doc = builder.parse("shop.xml");
+        Node root = doc.getDocumentElement();//корневой узел
+        NodeList nodeList = root.getChildNodes();
+        for (int i = 0; i < nodeList.getLength(); i++) {
+            Node node = nodeList.item(i);
+            //текущий узел
+            if (Node.TEXT_NODE != node.getNodeType()) {
+                NodeList element = node.getChildNodes();//следующий узел <load, save, log>
+                switch (node.getNodeName()) {
+                    case "load":
+                        getAttribute(element);//получить атрибуты
+                        if (enabled) {
+                            basket = new Basket(fileName, format);
+                            System.out.printf("Корзина загружена из %s\n", fileName);
+                        } else {
+                            Double[] price = { 50.0, 14.0, 80.0, 34.53, 65.92 };
+                            String[] foodBasket = { "Молоко", "Хлеб", "Гречневая крупа", "Сыр", "Конфеты" };
+                            basket = new Basket(price, foodBasket);
+                            System.out.println("Корзина загружена из массивов.");
+                        }
+                        for (int d = 0; d < basket.getPrice().size(); d++) {
+                            basket.addToCart(d, 2 * d + 1);//добавим продукт
+                            clientLog.log(d, 2 * d + 1);
+                        }
+                        basket.printCard();
+                        break;
+                    case "save":
+                        for (int d = 0; d < basket.getPrice().size(); d++) {
+                            basket.addToCart(d, 3 * d + 1);//добавим продукт
+                            clientLog.log(d, 3 * d + 1);
+                        }
+                        basket.printCard();
+                        getAttribute(element);//получить атрибуты
+                        if (enabled) {
+                            switch (format) {
+                                case "json":
+                                    basket.saveJSON(fileName);
+                                    break;
+                                case "text":
+                                    basket.saveTxt(fileName);
+                                    break;
+                                default:
+                                    break;
+                            }
+                            System.out.printf("Корзина сохранена в %s\n", fileName);
+                        } else {
+                            System.out.printf("Корзина не сохранена.");
+                        }
+                        break;
+                    case "log":
+                        getAttribute(element);//получить атрибуты
+                        if (enabled) {
+                            clientLog.exportAsCSV(new File(fileName));//сохранили лог
+                            System.out.printf("Log сохранен в %s\n", fileName);
+                        } else {
+                            System.out.printf("Log-файл не сохранен.");
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
-        clientLog.exportAsCSV(new File("log.csv"));//сохранили лог
-        basket1.saveJSON("basket.json");//записали карзину в json
-        basket1.loadFromJSONFile(new File("basket.json"));//считали карзину
-        basket1.printCard();//печать карзины*/
-
     }
 }

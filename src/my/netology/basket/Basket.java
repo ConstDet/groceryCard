@@ -5,12 +5,14 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class Basket {
-    private static double[] price;
-    private static String[] foodName;
+    private static List<Double> price = new ArrayList<>();
+    private static List<String> foodName = new ArrayList<>();
     private int[] basket;
-    private File file;
 
     public Basket(String pathFile, String format) throws FileNotFoundException {
         switch (format) {
@@ -20,17 +22,19 @@ public class Basket {
             case "json":
                 loadFromJSONFile(new File(pathFile));
                 break;
+            default:
+                break;
         }
-        this.basket = new int[foodName.length];
+        this.basket = new int[foodName.size()];
     }
 
-    public Basket(double[] price, String[] foodName) {
-        this.price = price;
-        this.foodName = foodName;
-        this.basket = new int[foodName.length];
+    public Basket(Double[] price, String[] foodName) {
+        this.price.addAll(Arrays.asList(price));
+        this.foodName.addAll(Arrays.asList(foodName));
+        this.basket = new int[this.foodName.size()];
     }
 
-    public double[] getPrice() {
+    public List<Double> getPrice() {
         return price;
     }
 
@@ -57,9 +61,9 @@ public class Basket {
                     continue;
                 }
                 if (intStr) {
-                    foodName[count] = resBasket[i];
+                    foodName.add(resBasket[i]);
                 } else {
-                    price[count] = Double.parseDouble(resBasket[i]);
+                    price.add(Double.parseDouble(resBasket[i]));
                 }
                 count++;
             }
@@ -73,14 +77,10 @@ public class Basket {
                 Object obj = jsonParser.parse(new FileReader(jsonFile));
                 JSONObject jsonObject = (JSONObject) obj;
                 for (int i = 0; i < jsonObject.size() / 2; i++) {
-                    не проинициализирован массив foodName[i] = (String) jsonObject.get(i + "-text");
-                    price[i] = (double) jsonObject.get(i + "-double");
+                    foodName.add((String) jsonObject.get(i + "-text"));
+                    price.add((double) jsonObject.get(i + "-double"));
                 }
-            } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } catch (ParseException e) {
+            } catch (ParseException | IOException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -99,8 +99,13 @@ public class Basket {
         for (int i = 0; i < basket.length; i++) {
             if (basket[i] > 0) {
                 System.out.printf("%-5s %-20s %-10s %-12s %-12s\n",
-                       ++count , foodName[i], basket[i], price[i], Round.roundingTo((basket[i] * price[i]), 2));
-                total += basket[i] * price[i];
+                       ++count ,
+                        foodName.get(i),
+                        basket[i],
+                        price.get(i),
+                        Round.roundingTo((basket[i] * price.get(i)),
+                                2));
+                total += basket[i] * price.get(i);
             }
         }
         System.out.printf("%-50s %s\n", "ИТОГО: ", Round.roundingTo(total, 2));
@@ -109,12 +114,12 @@ public class Basket {
     public void saveTxt(String pathFile) throws IOException {
         try(PrintWriter pW = new PrintWriter(pathFile)) {
             pW.print("foodName:" + "=");//метка наименования продуктов
-            for (int i = 0; i < foodName.length; i++) {
-                pW.print(foodName[i] + "=");
+            for (int i = 0; i < foodName.size(); i++) {
+                pW.print(foodName.get(i) + "=");
             }
             pW.print("price:" + "=");//метка цен
-            for (int i = 0; i < price.length; i++) {
-                pW.print(price[i] + "=");
+            for (int i = 0; i < price.size(); i++) {
+                pW.print(price.get(i) + "=");
             }
             pW.flush();
         }
@@ -122,11 +127,11 @@ public class Basket {
 
     public void saveJSON(String pathFile) {
         JSONObject jsonObject = new JSONObject();
-        for (int i = 0; i < foodName.length; i++) {
-            jsonObject.put(i + "-text", foodName[i]);
+        for (int i = 0; i < foodName.size(); i++) {
+            jsonObject.put(i + "-text", foodName.get(i));
         }
-        for (int i = 0; i < price.length; i++) {
-            jsonObject.put(i + "-double", price[i]);
+        for (int i = 0; i < price.size(); i++) {
+            jsonObject.put(i + "-double", price.get(i));
         }
         try (FileWriter fP = new FileWriter(new File(pathFile))) {
             fP.write(jsonObject.toJSONString());

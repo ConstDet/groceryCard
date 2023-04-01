@@ -2,8 +2,8 @@
 .idea
 /out
 /target
-basket
 basket_bin
 *.json
 *.csv
 *.xml
+*.txt
